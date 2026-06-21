@@ -29,12 +29,12 @@ This repo intentionally calls back to the original project:
 
 Core AlpacaBoards parity targets included in this revision:
 
-- Users: register/login/logout, profile, status, karma
+- Users: register/login/logout, profile, status, karma, good/bad tokens, old-school user information pages
 - User control: suspend/ban/pending/active, staff position, access level, discipline history
 - Boards: list, create/update from admin, topic lists
 - Topics: create, reply, lock/unlock, pin, soft-delete, read history
 - Messages: revisions, edit, soft-delete
-- Tags: public/private/moderator-ish tags, topic/link tagging
+- Tags: public/private/moderator-ish tags, topic/link tagging, full reference-style tag editor with access/participation/restrictions/interactions/moderator/admin fields
 - Links: submit, comment, vote, favorite, report
 - Invites: shop item -> inventory -> invite code -> invite-only registration
 - Shop/inventory: Invite and Pin Topic item model preserved
@@ -42,6 +42,7 @@ Core AlpacaBoards parity targets included in this revision:
 - Search: Postgres full-text topic/link search
 - Admin: site options, boards, tags, users, audit log, report resolution
 - Source page: `/source` documents how AlpacaBoards maps to LueRevival
+- Pre-login TF4-style landing page and post-login EOTI-style front page based on supplied visual references
 
 ## Quick start with Docker
 

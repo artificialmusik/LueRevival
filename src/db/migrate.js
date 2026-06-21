@@ -43,12 +43,16 @@ async function seedCore() {
     await client.query(`
       INSERT INTO boards (id, title, description, sort_order) VALUES
       (1, 'LUE', 'Main social board, seeded from the original AlpacaBoards schema.', 1),
-      (2, 'Links', 'Shared links and link discussion.', 2),
-      (3, 'Meta', 'Site options, feedback, and feature talk.', 3)
+      (2, 'Gaming', 'Games, streams, Steam nonsense, and coordination.', 2),
+      (3, 'Food', 'Recipes, snacks, awful cravings, and kitchen crimes.', 3),
+      (4, 'Music', 'Songs, albums, shows, and industry plants.', 4),
+      (5, 'Links', 'Shared links and link discussion.', 5),
+      (6, 'Meta', 'Site options, feedback, and feature talk.', 6)
       ON CONFLICT (title) DO NOTHING
     `);
 
     const count = await client.query('SELECT count(*)::int AS n FROM users');
+    let adminId;
     if (count.rows[0].n === 0) {
       const passwordHash = await bcrypt.hash(config.admin.password, 12);
       const user = await client.query(`
@@ -56,12 +60,7 @@ async function seedCore() {
         VALUES ($1, $2, $3, 1, 100, 'active', 100, 'seed admin', 'welcome to the revival')
         RETURNING id
       `, [config.admin.username, config.admin.email, passwordHash]);
-      const adminId = user.rows[0].id;
-      await client.query(`
-        INSERT INTO topical_tags (id, title, description, type, access, participation, permanent, user_id)
-        VALUES (1, 'LUE', 'Main Social Board', 1, 'public', 'open', true, $1)
-        ON CONFLICT (title) DO NOTHING
-      `, [adminId]);
+      adminId = user.rows[0].id;
       const topic = await client.query(`
         INSERT INTO topics (board_id, user_id, title, updated_at)
         VALUES (1, $1, 'Welcome to LueRevival', now()) RETURNING id
@@ -71,6 +70,24 @@ async function seedCore() {
         VALUES ($1, $2, $3)
       `, [topic.rows[0].id, adminId, 'This board is a modern rebuild of AlpacaBoards. Source material: https://github.com/acjordan2/AlpacaBoards @ 7d2cfe1. The UI intentionally keeps the classic gray/blue table-board feel.']);
       await client.query(`INSERT INTO tagged (data_id, tag_id, type) VALUES ($1, 1, 'topic') ON CONFLICT DO NOTHING`, [topic.rows[0].id]);
+    } else {
+      const admin = await client.query(`SELECT id FROM users WHERE access_level >= 50 ORDER BY access_level DESC, id LIMIT 1`);
+      const fallback = await client.query(`SELECT id FROM users ORDER BY id LIMIT 1`);
+      adminId = admin.rows[0]?.id || fallback.rows[0]?.id;
+    }
+
+    if (adminId) {
+      await client.query(`
+        INSERT INTO topical_tags (id, title, description, type, access, participation, permanent, user_id, parent_tags, moderators, administrators)
+          VALUES
+            (1, 'LUE', 'Main Social Board', 1, 'public', 'open', true, $1, '', 'Global', $2),
+            (2, 'Frogs', 'Everything regarding frogs, toads and amphibians in general.', 1, 'public', 'open', false, $1, 'Reptiles and Amphibians', 'Global', $2)
+          ON CONFLICT (title) DO UPDATE SET
+            description=EXCLUDED.description,
+            parent_tags=EXCLUDED.parent_tags,
+            moderators=EXCLUDED.moderators,
+            administrators=EXCLUDED.administrators
+      `, [adminId, config.admin.username]);
     }
   });
 }

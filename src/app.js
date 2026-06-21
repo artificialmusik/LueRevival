@@ -35,7 +35,7 @@ app.use(helmet({
     directives: {
       "script-src": ["'self'"],
       "style-src": ["'self'", "'unsafe-inline'"],
-      "img-src": ["'self'", "data:"],
+      "img-src": ["'self'", "data:", "https:"],
       "connect-src": ["'self'"]
     }
   }
@@ -148,21 +148,51 @@ async function applyTags(client, dataId, type, tags, userId) {
 }
 
 app.get('/', asyncHandler(async (_req, res) => {
+  if (!res.locals.currentUser) {
+    const links = await query(`SELECT id, title, url FROM links WHERE active=true ORDER BY created_at DESC LIMIT 25`);
+    const fallback = [
+      ['upi.com', 'Sweden rules that in fact file-sharing is NOT an act of religious worship.'],
+      ['10tv.com', 'Drunk Ohio Teacher Resists Arrest, Sprays Cops With Her Breastmilk'],
+      ['boston.com', 'A Gallery of 47 Photos of the wildest weather from the past year'],
+      ['latimes.com', 'San Francisco to vote on banning the sale of all pets (including fish)'],
+      ['thesun.co.uk', "World's first bionic-legged dog"],
+      ['sciencenews.org', 'Multicellular Life Arises In Test Tube'],
+      ['somuchtotellyou.co.nz', 'These are the 100 most beautiful words in the English language, apparently.'],
+      ['gizmodo.com', 'Scientists Create Memory Expansion for Brain a la The Matrix']
+    ];
+    const articles = links.rows.length
+      ? links.rows.map(l => {
+          let source = 'local';
+          try { source = new URL(l.url || 'https://example.com').hostname.replace(/^www\./, ''); } catch (_error) { source = 'local'; }
+          return { source, title: l.title, href: l.url || `/links/${l.id}` };
+        })
+      : fallback.map(([source, title]) => ({ source, title, href: '/login' }));
+    return res.render('landing', { articles });
+  }
+
   const boards = await query(`
-    SELECT b.*, count(DISTINCT t.id)::int AS topics, count(m.id)::int AS messages, max(t.updated_at) AS last_post
-    FROM boards b
-    LEFT JOIN topics t ON t.board_id = b.id AND t.deleted = false
-    LEFT JOIN messages m ON m.topic_id = t.id AND m.deleted = false
-    GROUP BY b.id
-    ORDER BY b.sort_order, b.id
+    SELECT b.* FROM boards b ORDER BY b.sort_order, b.id LIMIT 6
   `);
-  const latest = await query(`
-    SELECT t.id, t.title, t.updated_at, b.title AS board_title, u.username
-    FROM topics t JOIN boards b ON b.id = t.board_id JOIN users u ON u.id = t.user_id
-    WHERE t.deleted = false
-    ORDER BY t.updated_at DESC LIMIT 12
+  const sections = [];
+  for (const board of boards.rows) {
+    const topics = await query(`
+      SELECT t.id, t.title, t.updated_at, t.locked, t.pinned_until, u.username,
+        (SELECT count(*)::int FROM messages m WHERE m.topic_id=t.id AND m.deleted=false) AS msgs
+      FROM topics t JOIN users u ON u.id = t.user_id
+      WHERE t.board_id=$1 AND t.deleted=false
+      ORDER BY (t.pinned_until IS NOT NULL AND t.pinned_until > now()) DESC, t.updated_at DESC
+      LIMIT 25
+    `, [board.id]);
+    if (topics.rows.length) sections.push({ title: board.title, board_id: board.id, topics: topics.rows });
+  }
+  const activeTags = await query(`
+    SELECT tt.id, tt.title, count(tg.id)::int AS uses
+    FROM topical_tags tt LEFT JOIN tagged tg ON tg.tag_id=tt.id
+    GROUP BY tt.id
+    ORDER BY uses DESC, tt.title
+    LIMIT 60
   `);
-  res.render('index', { boards: boards.rows, latest: latest.rows });
+  res.render('front', { sections, activeTags: activeTags.rows });
 }));
 
 app.get('/source', (_req, res) => res.render('source'));
@@ -220,14 +250,34 @@ app.post('/register', asyncHandler(async (req, res) => {
 }));
 
 app.get('/u/:username', asyncHandler(async (req, res) => {
-  const user = await query(`SELECT id, username, email, avatar_url, signature, quote, timezone, karma, account_created, last_active, status FROM users WHERE lower(username)=lower($1)`, [req.params.username]);
+  const user = await query(`
+    SELECT u.id, u.username, u.email, u.instant_messaging, u.avatar_url, u.signature, u.quote, u.timezone,
+      u.karma, u.good_tokens, u.bad_tokens, u.account_created, u.last_active, u.status, sp.title AS staff_title
+    FROM users u LEFT JOIN staff_positions sp ON sp.id=u.staff_position_id
+    WHERE lower(u.username)=lower($1)
+  `, [req.params.username]);
   if (!user.rows[0]) return res.status(404).render('error', { message: 'User not found' });
   const topics = await query('SELECT id, title, updated_at FROM topics WHERE user_id=$1 AND deleted=false ORDER BY updated_at DESC LIMIT 10', [user.rows[0].id]);
-  res.render('profile', { profile: user.rows[0], topics: topics.rows });
+  const tagRows = await query(`SELECT id,title,moderators,administrators FROM topical_tags ORDER BY title`);
+  const usernameKey = user.rows[0].username.toLowerCase();
+  const names = (value) => String(value || '').split(/[;,]/).map(v => v.trim().toLowerCase()).filter(Boolean);
+  const adminTags = tagRows.rows.filter(t => names(t.administrators).includes(usernameKey));
+  const modTags = tagRows.rows.filter(t => names(t.moderators).includes(usernameKey));
+  res.render('profile', { profile: user.rows[0], topics: topics.rows, adminTags, modTags });
+}));
+app.post('/u/:username/token', requireAuth, asyncHandler(async (req, res) => {
+  const kind = req.body.kind === 'bad' ? 'bad' : 'good';
+  const column = kind === 'bad' ? 'bad_tokens' : 'good_tokens';
+  const found = await query(`UPDATE users SET ${column}=${column}+1 WHERE lower(username)=lower($1) RETURNING id, username`, [req.params.username]);
+  if (!found.rows[0]) return res.status(404).render('error', { message: 'User not found' });
+  await audit(res.locals.currentUser.id, `token.${kind}`, 'user', found.rows[0].id);
+  req.flash('info', `Gave ${found.rows[0].username} a ${kind} token.`);
+  res.redirect(`/u/${encodeURIComponent(found.rows[0].username)}`);
 }));
 app.get('/settings/profile', requireAuth, (req, res) => res.render('profile_edit'));
 app.post('/settings/profile', requireAuth, asyncHandler(async (req, res) => {
-  await query(`UPDATE users SET email=$1, private_email=$2, instant_messaging=$3, signature=$4, quote=$5, timezone=$6 WHERE id=$7`, [req.body.email || null, req.body.private_email || null, req.body.instant_messaging || null, req.body.signature || null, req.body.quote || null, req.body.timezone || 'UTC', res.locals.currentUser.id]);
+  const avatarUrl = req.body.avatar_url ? safeHttpUrl(req.body.avatar_url) : null;
+  await query(`UPDATE users SET email=$1, private_email=$2, instant_messaging=$3, avatar_url=$4, signature=$5, quote=$6, timezone=$7 WHERE id=$8`, [req.body.email || null, req.body.private_email || null, req.body.instant_messaging || null, avatarUrl, req.body.signature || null, req.body.quote || null, req.body.timezone || 'UTC', res.locals.currentUser.id]);
   await audit(res.locals.currentUser.id, 'profile.update', 'user', res.locals.currentUser.id);
   req.flash('info', 'Profile updated.');
   res.redirect(`/u/${encodeURIComponent(res.locals.currentUser.username)}`);
@@ -473,9 +523,27 @@ app.get('/admin/tags', requireAdmin, asyncHandler(async (_req, res) => {
   res.render('admin_tags', { tags: tags.rows });
 }));
 app.post('/admin/tags', requireAdmin, asyncHandler(async (req, res) => {
-  await query(`INSERT INTO topical_tags (title, description, access, participation, permanent, special, user_id) VALUES ($1,$2,$3,$4,$5,$6,$7) ON CONFLICT(title) DO UPDATE SET description=EXCLUDED.description, access=EXCLUDED.access, participation=EXCLUDED.participation, permanent=EXCLUDED.permanent, special=EXCLUDED.special`, [req.body.title, req.body.description || '', req.body.access || 'public', req.body.participation || 'open', req.body.permanent === 'on', req.body.special === 'on', res.locals.currentUser.id]);
+  await query(`INSERT INTO topical_tags (title, description, access, participation, permanent, inceptive, special, user_id) VALUES ($1,$2,$3,$4,$5,$6,$7,$8) ON CONFLICT(title) DO UPDATE SET description=EXCLUDED.description, access=EXCLUDED.access, participation=EXCLUDED.participation, permanent=EXCLUDED.permanent, inceptive=EXCLUDED.inceptive, special=EXCLUDED.special`, [req.body.title, req.body.description || '', req.body.access || 'public', req.body.participation || 'open', req.body.permanent === 'on', req.body.inceptive === 'on', req.body.special === 'on', res.locals.currentUser.id]);
   await audit(res.locals.currentUser.id, 'tag.upsert', 'tag', null, { title: req.body.title });
   res.redirect('/admin/tags');
+}));
+app.get('/admin/tags/:id/edit', requireAdmin, asyncHandler(async (req, res) => {
+  const tag = await query('SELECT * FROM topical_tags WHERE id=$1', [req.params.id]);
+  if (!tag.rows[0]) return res.status(404).render('error', { message: 'Tag not found' });
+  res.render('tag_edit', { tag: tag.rows[0] });
+}));
+app.post('/admin/tags/:id/edit', requireAdmin, asyncHandler(async (req, res) => {
+  const access = ['public','private','moderator'].includes(req.body.access) ? req.body.access : 'public';
+  const participation = ['open','staff','owner'].includes(req.body.participation) ? req.body.participation : 'open';
+  await query(`
+    UPDATE topical_tags SET description=$1, access=$2, participation=$3, permanent=$4, inceptive=$5,
+      access_users=$6, parent_tags=$7, child_tags=$8, mutually_exclusive_tags=$9, dependent_tags=$10,
+      moderators=$11, administrators=$12
+    WHERE id=$13
+  `, [req.body.description || '', access, participation, req.body.permanent === 'on', req.body.inceptive === 'on', req.body.access_users || '', req.body.parent_tags || '', req.body.child_tags || '', req.body.mutually_exclusive_tags || '', req.body.dependent_tags || '', req.body.moderators || '', req.body.administrators || '', req.params.id]);
+  await audit(res.locals.currentUser.id, 'tag.edit', 'tag', req.params.id);
+  req.flash('info', 'Tag updated.');
+  res.redirect(`/admin/tags/${req.params.id}/edit`);
 }));
 app.post('/admin/reports/:id/resolve', requireAdmin, asyncHandler(async (req, res) => {
   await query('UPDATE link_reports SET resolved=true WHERE id=$1', [req.params.id]);

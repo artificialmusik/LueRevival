@@ -1,0 +1,39 @@
+<%- include('partials/header', { title: 'End of the Internet' }) %>
+<h1 class="eoti-title">End of the Internet</h1>
+<div class="front-grid">
+  <main>
+    <% sections.forEach(function(section){ %>
+      <section class="moment-section">
+        <h2>[<%= section.title %>] of the Moment</h2>
+        <table class="grid moment-table">
+          <tr><th>Topics</th><th>Created By</th><th>Msgs</th><th>Last Post</th></tr>
+          <% section.topics.forEach(function(t){ %>
+            <tr>
+              <td><% if (t.locked) { %>🔒 <% } %><a href="/topics/<%= t.id %>"><%= t.title %></a> <% if (t.pinned_until && new Date(t.pinned_until) > new Date()) { %><span class="rightnote">Pinned</span><% } %></td>
+              <td><a href="/u/<%= encodeURIComponent(t.username) %>"><%= t.username %></a></td>
+              <td><%= t.msgs %></td>
+              <td><%= new Date(t.updated_at).toLocaleString() %></td>
+            </tr>
+          <% }) %>
+          <tr><td colspan="4" class="center"><a href="/boards/<%= section.board_id %>">See More</a></td></tr>
+        </table>
+      </section>
+    <% }) %>
+  </main>
+  <aside class="front-sidebar">
+    <div class="sidebox">
+      <h3>Poll of the Day</h3>
+      <p><strong>Was ETI worth it? Have you have fun?</strong></p>
+      <% ['It was, and I have.', "It was worth it, but I haven't had fun.", "It wasn't worth it, but I've had fun.", "It wasn't, and I haven't.", 'Futurama'].forEach(function(option, i){ %>
+        <label><input type="radio" name="poll" <%= i === 0 ? 'checked' : '' %>> <%= option %></label><br>
+      <% }) %>
+      <p><button>Vote!</button> <a href="#">View results</a> | <a href="#">Add a poll</a> | <a href="#">View old polls</a></p>
+      <p><strong>Added by:</strong> Weavile</p>
+    </div>
+    <div class="sidebox">
+      <h3>Active tags</h3>
+      <p class="tag-cloud"><% activeTags.forEach(function(t, i){ %><a href="/admin/tags/<%= t.id %>/edit"><%= t.title %></a><%= i < activeTags.length - 1 ? ' • ' : '' %><% }) %></p>
+    </div>
+  </aside>
+</div>
+<%- include('partials/footer') %>

@@ -39,6 +39,8 @@ CREATE TABLE IF NOT EXISTS users (
   quote varchar(256),
   timezone varchar(64) NOT NULL DEFAULT 'UTC',
   karma int NOT NULL DEFAULT 0,
+  good_tokens int NOT NULL DEFAULT 0,
+  bad_tokens int NOT NULL DEFAULT 0,
   account_created timestamptz NOT NULL DEFAULT now(),
   last_active timestamptz
 );
@@ -107,6 +109,13 @@ CREATE TABLE IF NOT EXISTS topical_tags (
   permanent boolean NOT NULL DEFAULT false,
   inceptive boolean NOT NULL DEFAULT false,
   special boolean NOT NULL DEFAULT false,
+  access_users text NOT NULL DEFAULT '',
+  parent_tags text NOT NULL DEFAULT '',
+  child_tags text NOT NULL DEFAULT '',
+  mutually_exclusive_tags text NOT NULL DEFAULT '',
+  dependent_tags text NOT NULL DEFAULT '',
+  moderators text NOT NULL DEFAULT '',
+  administrators text NOT NULL DEFAULT '',
   user_id bigint REFERENCES users(id),
   created_at timestamptz NOT NULL DEFAULT now()
 );
@@ -252,6 +261,16 @@ CREATE TABLE IF NOT EXISTS audit_log (
   details jsonb NOT NULL DEFAULT '{}'::jsonb,
   created_at timestamptz NOT NULL DEFAULT now()
 );
+
+ALTER TABLE IF EXISTS users ADD COLUMN IF NOT EXISTS good_tokens int NOT NULL DEFAULT 0;
+ALTER TABLE IF EXISTS users ADD COLUMN IF NOT EXISTS bad_tokens int NOT NULL DEFAULT 0;
+ALTER TABLE IF EXISTS topical_tags ADD COLUMN IF NOT EXISTS access_users text NOT NULL DEFAULT '';
+ALTER TABLE IF EXISTS topical_tags ADD COLUMN IF NOT EXISTS parent_tags text NOT NULL DEFAULT '';
+ALTER TABLE IF EXISTS topical_tags ADD COLUMN IF NOT EXISTS child_tags text NOT NULL DEFAULT '';
+ALTER TABLE IF EXISTS topical_tags ADD COLUMN IF NOT EXISTS mutually_exclusive_tags text NOT NULL DEFAULT '';
+ALTER TABLE IF EXISTS topical_tags ADD COLUMN IF NOT EXISTS dependent_tags text NOT NULL DEFAULT '';
+ALTER TABLE IF EXISTS topical_tags ADD COLUMN IF NOT EXISTS moderators text NOT NULL DEFAULT '';
+ALTER TABLE IF EXISTS topical_tags ADD COLUMN IF NOT EXISTS administrators text NOT NULL DEFAULT '';
 
 CREATE INDEX IF NOT EXISTS idx_topics_board_updated ON topics(board_id, updated_at DESC);
 CREATE INDEX IF NOT EXISTS idx_messages_topic_posted ON messages(topic_id, posted_at ASC);

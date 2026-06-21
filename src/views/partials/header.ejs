@@ -6,28 +6,13 @@
   <title><%= pageTitle(title) %></title>
   <link rel="stylesheet" href="/css/nblue.css">
 </head>
-<body class="regular">
-<table class="classic shell">
-  <tr><th class="title"><a href="/"><%= site.site_name %></a></th></tr>
-  <tr><td><div class="menubar">
-    <a href="/">Boards</a> |
-    <a href="/links">Links</a> |
-    <a href="/search">Search</a> |
-    <a href="/images">Images</a> |
-    <a href="/shop">Shop</a> |
-    <a href="/source">Source</a>
-    <% if (currentUser && (currentUser.access_level >= 50 || currentUser.staff_position_id)) { %> | <a href="/admin">Admin</a><% } %>
-  </div></td></tr>
-  <tr><td><div class="userbar">
-    <% if (currentUser) { %>
-      Logged in as <a href="/u/<%= encodeURIComponent(currentUser.username) %>"><%= currentUser.username %></a>
-      | karma: <%= currentUser.karma %>
-      | <a href="/settings/profile">profile</a>
-      | <a href="/invite">invites</a>
-      | <form class="inline" method="post" action="/logout"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><button>logout</button></form>
-    <% } else { %>
-      <a href="/login">login</a> | <a href="/register">register</a>
-    <% } %>
-  </div></td></tr>
-  <tr><td class="body">
-    <%- include('flash') %>
+<body class="regular eoti">
+<div class="topnav">
+  <div><a href="/">Home</a> | <a href="/source">Wiki</a> | <a href="/admin">Stats</a> | <a href="/admin/users">User List</a> | <a href="/source">Help</a>
+  <% if (currentUser) { %> | <form class="inline" method="post" action="/logout"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><button class="link-button">Logout</button></form><% } else { %> | <a href="/login">Login</a><% } %></div>
+  <div>
+    <a href="/boards/1">Archived</a> | ~~ <strong><%= currentUser ? currentUser.username : 'Guest' %></strong> ~~ | <a href="/boards/1">Anon</a> | <a href="/links">TinyChat</a> | <a href="/admin/tags">Tag Administration</a> | <a href="/images">Parenting</a> | <a href="/shop">Subscribed</a> | <a href="/admin">Complaints</a> | <a href="/boards/1/new">[+]</a>
+  </div>
+</div>
+<div class="page-wrap">
+  <%- include('flash') %>

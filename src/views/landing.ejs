@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title><%= pageTitle('Welcome') %></title>
+  <link rel="stylesheet" href="/css/nblue.css">
+</head>
+<body class="tf4-login">
+<div class="tf4-browserbar">Thanksforallthefi.sh :: Welcome</div>
+<header class="tf4-hero">
+  <div class="tf4-title"><%= site.site_name %></div>
+  <div class="tf4-subtitle">lunds universitet espanol</div>
+</header>
+<main class="tf4-layout">
+  <aside class="tf4-sidebar">
+    <form method="post" action="/login">
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+      <label>Username</label>
+      <input name="username" autocomplete="username" required>
+      <label>Password</label>
+      <input type="password" name="password" autocomplete="current-password" required>
+      <button>Login</button>
+    </form>
+    <a href="/">Latest Articles</a>
+    <a href="/register">Register</a>
+    <a href="/source">Forgot Password</a>
+  </aside>
+  <section class="tf4-articles">
+    <h1>25 Latest Articles</h1>
+    <% articles.forEach(function(a){ %>
+      <p><strong><%= a.source %>:</strong> <a href="<%= a.href %>"><%= a.title %></a></p>
+    <% }) %>
+  </section>
+</main>
+</body>
+</html>

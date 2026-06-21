@@ -1,0 +1,36 @@
+<%- include('partials/header', { title: 'Edit Tag' }) %>
+<h1 class="eoti-title">Edit Tag</h1>
+<h2 class="center"><%= tag.title %></h2>
+<form method="post" action="/admin/tags/<%= tag.id %>/edit" class="tag-edit-form">
+  <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+  <fieldset><legend>Description</legend><textarea name="description" rows="3"><%= tag.description || '' %></textarea></fieldset>
+  <fieldset><legend>Access</legend>
+    <label><input type="radio" name="access" value="public" <%= tag.access === 'public' ? 'checked' : '' %>> Anyone can access this tag, the users listed below may not participate <em>(public)</em></label><br>
+    <label><input type="radio" name="access" value="private" <%= tag.access === 'private' ? 'checked' : '' %>> No one can access this tag, except the users listed below <em>(private)</em></label>
+    <input name="access_users" value="<%= tag.access_users || '' %>">
+  </fieldset>
+  <fieldset><legend>Participation</legend>
+    <label><input type="radio" name="participation" value="open" <%= tag.participation === 'open' ? 'checked' : '' %>> Anyone can create topics or post</label><br>
+    <label><input type="radio" name="participation" value="staff" <%= tag.participation === 'staff' ? 'checked' : '' %>> Only moderators can create topics, anyone can post messages</label><br>
+    <label><input type="radio" name="participation" value="owner" <%= tag.participation === 'owner' ? 'checked' : '' %>> Only moderators can create topics or post messages</label>
+  </fieldset>
+  <fieldset><legend>Restrictions</legend>
+    <label><input type="checkbox" name="permanent" <%= tag.permanent ? 'checked' : '' %>> Permanent <em>(Once added, this tag cannot be removed)</em></label><br>
+    <label><input type="checkbox" name="inceptive" <%= tag.inceptive ? 'checked' : '' %>> Inceptive <em>(This tag must be added to a topic at the time of topic creation)</em></label><br>
+    <em>Note: Tag moderators can bypass the above restrictions.</em>
+  </fieldset>
+  <fieldset><legend>Interactions</legend>
+    <label>Parents <em>(While browsing tags listed here, [<%= tag.title %>] will also appear. Related tags cannot be tagged together)</em></label>
+    <input name="parent_tags" value="<%= tag.parent_tags || '' %>">
+    <label>Children <em>(While browsing by [<%= tag.title %>], these tags will also appear. Related tags cannot be tagged together)</em></label>
+    <input name="child_tags" value="<%= tag.child_tags || '' %>">
+    <label>Mutually exclusive <em>(The below tags are not allowed on the same topic together with [<%= tag.title %>])</em></label>
+    <input name="mutually_exclusive_tags" value="<%= tag.mutually_exclusive_tags || '' %>">
+    <label>Dependent <em>(The below tags must be present in order to tag a topic with [<%= tag.title %>])</em></label>
+    <input name="dependent_tags" value="<%= tag.dependent_tags || '' %>">
+  </fieldset>
+  <fieldset><legend>Moderators</legend><input name="moderators" value="<%= tag.moderators || '' %>"></fieldset>
+  <fieldset><legend>Administrators</legend><input name="administrators" value="<%= tag.administrators || '' %>"></fieldset>
+  <p class="right"><button>Save</button></p>
+</form>
+<%- include('partials/footer') %>
