@@ -1,0 +1,6 @@
+<% if (flash.error && flash.error.length) { %>
+  <% flash.error.forEach(function(m){ %><div class="notice error"><%= m %></div><% }) %>
+<% } %>
+<% if (flash.info && flash.info.length) { %>
+  <% flash.info.forEach(function(m){ %><div class="notice info"><%= m %></div><% }) %>
+<% } %>

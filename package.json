@@ -1,0 +1,38 @@
+{
+  "name": "luerevival",
+  "version": "1.0.0",
+  "description": "A modern Docker-ready revival of AlpacaBoards with preserved nostalgic LUE-style board UX.",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "nodemon src/server.js",
+    "migrate": "node src/db/migrate.js",
+    "seed": "node src/db/seed.js",
+    "check": "node --check src/server.js && node --check src/app.js && node --check src/db/migrate.js && node --check src/lib/format.js",
+    "test": "node --test tests/*.test.js",
+    "verify": "npm run check && npm test"
+  },
+  "keywords": ["forum", "message-board", "alpaca-boards", "lue", "docker", "postgres"],
+  "author": "Nathan + Hermes Agent",
+  "license": "MIT",
+  "dependencies": {
+    "bcryptjs": "^3.0.3",
+    "connect-flash": "^0.1.1",
+    "connect-pg-simple": "^10.0.0",
+    "dotenv": "^17.4.2",
+    "ejs": "^6.0.1",
+    "express": "^5.2.1",
+    "express-rate-limit": "^8.2.1",
+    "express-session": "^1.19.0",
+    "helmet": "^8.1.0",
+    "multer": "^2.0.2",
+    "nanoid": "^5.1.6",
+    "pg": "^8.22.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.11"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

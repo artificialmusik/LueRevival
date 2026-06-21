@@ -1,0 +1,9 @@
+<%- include('partials/header', { title: 'Login' }) %>
+<h2>Login</h2>
+<form method="post" action="/login" class="classic-form">
+  <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+  <label>Username <input name="username" autocomplete="username" required></label><br>
+  <label>Password <input type="password" name="password" autocomplete="current-password" required></label><br>
+  <button type="submit">Login</button>
+</form>
+<%- include('partials/footer') %>

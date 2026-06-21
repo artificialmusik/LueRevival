@@ -1,0 +1,34 @@
+<%- include('partials/header', { title: topic.title }) %>
+<h2><a href="/boards/<%= topic.board_id %>"><%= topic.board_title %></a> / <%= topic.title %></h2>
+<div class="infobar">Tags: <%= tags.map(t => t.title).join(', ') || 'none' %> <% if (topic.locked) { %>| locked<% } %></div>
+<% messages.forEach(function(m){ %>
+  <a id="m<%= m.id %>"></a>
+  <div class="message-container">
+    <div class="message-top">#<%= m.id %> by <a href="/u/<%= encodeURIComponent(m.username) %>"><%= m.username %></a> at <%= new Date(m.posted_at).toLocaleString() %><% if (m.edited_at) { %> edited<% } %></div>
+    <table class="message-body"><tr>
+      <td class="message"><% if (m.deleted) { %><del>deleted by moderation/user</del><% } else { %><%- renderMessage(m.body) %><% } %></td>
+      <td class="userpic"><div class="userpic-holder"><%= m.signature || '' %></div></td>
+    </tr></table>
+    <% if (currentUser && !m.deleted && (currentUser.id === m.user_id || canAdmin)) { %>
+      <details><summary>edit/delete</summary>
+        <form method="post" action="/messages/<%= m.id %>/edit"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><textarea name="body" rows="5" cols="80"><%= m.body %></textarea><br><button>save revision</button></form>
+        <form method="post" action="/messages/<%= m.id %>/delete"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><button>soft delete</button></form>
+      </details>
+    <% } %>
+  </div>
+<% }) %>
+<a id="bottom"></a>
+<% if (currentUser && !topic.locked) { %>
+  <form id="quickpost" method="post" action="/topics/<%= topic.id %>/reply">
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+    <strong>Quick Reply</strong><br>
+    <textarea name="body" maxlength="8192" required></textarea><br>
+    <button type="submit">Post Reply</button>
+  </form>
+  <a href="#quickpost" id="qptoggle">+</a>
+<% } else if (topic.locked) { %><p><em>Topic locked.</em></p><% } %>
+<% if (canAdmin) { %>
+  <h3>Moderation</h3>
+  <form method="post" action="/topics/<%= topic.id %>/mod"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><button name="action" value="lock">lock</button> <button name="action" value="unlock">unlock</button> <button name="action" value="pin">pin 24h</button> <button name="action" value="delete">soft delete topic</button></form>
+<% } %>
+<%- include('partials/footer') %>

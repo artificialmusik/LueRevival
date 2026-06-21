@@ -1,0 +1,43 @@
+name: ci
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: luerevival
+          POSTGRES_USER: luerevival
+          POSTGRES_PASSWORD: test_password
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U luerevival -d luerevival"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    env:
+      NODE_ENV: test
+      POSTGRES_DB: luerevival
+      POSTGRES_USER: luerevival
+      POSTGRES_PASSWORD: test_password
+      POSTGRES_HOST: 127.0.0.1
+      POSTGRES_PORT: 5432
+      SESSION_SECRET: test_session_secret_please_change_me_48_bytes
+      ADMIN_PASSWORD: test_admin_password_16_chars
+      COOKIE_SECURE: 'false'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+      - run: npm ci
+      - run: npm run verify
+      - run: npm run migrate

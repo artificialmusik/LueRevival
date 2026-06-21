@@ -1,0 +1,7 @@
+<%- include('partials/header', { title: 'Links' }) %>
+<h2>Links</h2>
+<% if (currentUser) { %><p><a href="/links/new">Add link</a></p><% } %>
+<table class="grid"><tr><th>Score</th><th>Title</th><th>By</th><th>Created</th></tr>
+<% links.forEach(function(l){ %><tr><td><%= l.score %></td><td><a href="/links/<%= l.id %>"><%= l.title %></a><br><small><%= l.url || '' %></small></td><td><%= l.username %></td><td><%= new Date(l.created_at).toLocaleString() %></td></tr><% }) %>
+</table>
+<%- include('partials/footer') %>

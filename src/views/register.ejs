@@ -1,0 +1,12 @@
+<%- include('partials/header', { title: 'Register' }) %>
+<h2>Register</h2>
+<p>Registration mode: <strong><%= site.registration_mode %></strong>. If invite mode is active, paste an invite code.</p>
+<form method="post" action="/register" class="classic-form">
+  <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+  <label>Username <input name="username" pattern="[A-Za-z0-9_.-]{3,45}" required></label><br>
+  <label>Email <input type="email" name="email"></label><br>
+  <label>Invite code <input name="invite" value="<%= invite %>"></label><br>
+  <label>Password <input type="password" name="password" minlength="12" required></label><br>
+  <button type="submit">Register</button>
+</form>
+<%- include('partials/footer') %>

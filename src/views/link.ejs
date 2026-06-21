@@ -1,0 +1,14 @@
+<%- include('partials/header', { title: link.title }) %>
+<h2><%= link.title %></h2>
+<p><a href="<%= link.url %>" rel="nofollow ugc noopener"><%= link.url %></a></p>
+<div class="message"><%- renderMessage(link.description) %></div>
+<div class="infobar">score: <%= link.score %> | by <%= link.username %> | tags: <%= tags.map(t => t.title).join(', ') || 'none' %></div>
+<% if (currentUser) { %>
+<form method="post" action="/links/<%= link.id %>/vote" class="inline"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><button name="vote" value="1">up</button> <button name="vote" value="-1">down</button></form>
+<form method="post" action="/links/<%= link.id %>/favorite" class="inline"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><button>favorite</button></form>
+<details><summary>report link</summary><form method="post" action="/links/<%= link.id %>/report"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><input name="reason" maxlength="1024" required><button>report</button></form></details>
+<% } %>
+<h3>Comments</h3>
+<% comments.forEach(function(c){ %><div class="message"><div class="message-top"><%= c.username %> at <%= new Date(c.posted_at).toLocaleString() %></div><%- renderMessage(c.body) %></div><% }) %>
+<% if (currentUser) { %><form method="post" action="/links/<%= link.id %>/comment"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><textarea name="body" rows="5" cols="80" required></textarea><br><button>comment</button></form><% } %>
+<%- include('partials/footer') %>

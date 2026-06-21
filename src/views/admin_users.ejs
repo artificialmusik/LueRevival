@@ -1,0 +1,6 @@
+<%- include('partials/header', { title: 'Admin Users' }) %>
+<h2>User Control</h2>
+<table class="grid"><tr><th>User</th><th>Email</th><th>Status</th><th>Access</th><th>Staff Position</th><th>Update</th></tr>
+<% users.forEach(function(u){ %><tr><form method="post" action="/admin/users/<%= u.id %>"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><td><a href="/u/<%= encodeURIComponent(u.username) %>"><%= u.username %></a></td><td><%= u.email || '' %></td><td><select name="status"><% ['active','suspended','banned','pending'].forEach(function(s){ %><option <%= u.status===s?'selected':'' %>><%= s %></option><% }) %></select></td><td><input name="access_level" size="4" value="<%= u.access_level %>"></td><td><input name="staff_position_id" size="3" value="<%= u.staff_position_id || '' %>"></td><td><input name="description" placeholder="reason"><button>save</button></td></form></tr><% }) %>
+</table>
+<%- include('partials/footer') %>

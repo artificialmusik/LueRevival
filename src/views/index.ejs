@@ -1,0 +1,23 @@
+<%- include('partials/header', { title: 'Boards' }) %>
+<h1><%= site.site_name %></h1>
+<p><%= site.tagline %></p>
+<table class="grid">
+  <tr><th>Board</th><th>Description</th><th>Topics</th><th>Messages</th><th>Last Post</th></tr>
+  <% boards.forEach(function(board){ %>
+    <tr>
+      <td><a href="/boards/<%= board.id %>"><%= board.title %></a></td>
+      <td><%= board.description %></td>
+      <td><%= board.topics %></td>
+      <td><%= board.messages %></td>
+      <td><%= board.last_post ? new Date(board.last_post).toLocaleString() : '-' %></td>
+    </tr>
+  <% }) %>
+</table>
+<h2>Latest Topics</h2>
+<table class="grid">
+  <% latest.forEach(function(t){ %>
+  <tr><td><a href="/topics/<%= t.id %>"><%= t.title %></a> in <%= t.board_title %></td><td>by <%= t.username %></td><td><%= new Date(t.updated_at).toLocaleString() %></td></tr>
+  <% }) %>
+</table>
+<p><small>This project intentionally preserves the classic AlpacaBoards/LUE board feel while replacing PHP 5, MySQL-era assumptions, and Sphinx with a modern Node/Postgres stack.</small></p>
+<%- include('partials/footer') %>

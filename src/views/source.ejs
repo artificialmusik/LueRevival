@@ -1,0 +1,13 @@
+<%- include('partials/header', { title: 'Source Material' }) %>
+<h2>Source Material Callout</h2>
+<p>LueRevival is a modern rewrite of <a href="https://github.com/acjordan2/AlpacaBoards">acjordan2/AlpacaBoards</a>, cloned and inspected at commit <code>7d2cfe1</code>.</p>
+<table class="grid">
+<tr><th>Original subsystem</th><th>Modern replacement in LueRevival</th></tr>
+<tr><td>PHP 5.3.7 + Smarty</td><td>Node 22 + Express + EJS</td></tr>
+<tr><td>MySQL schema: Users, Topics, Messages, Links, Invites, Shop, Tags, StaffPermissions, DisciplineHistory, ImageMap</td><td>Postgres schema preserving those domain concepts with snake_case names and modern constraints</td></tr>
+<tr><td>Sphinx search daemon</td><td>Postgres full-text search indexes</td></tr>
+<tr><td>Cookie auth + legacy password library</td><td>bcrypt password hashes + server-side Postgres-backed sessions + CSRF</td></tr>
+<tr><td><code>templates/default/css/nblue.css</code></td><td>Copied directly and lightly extended to preserve the gray/blue table-board feel</td></tr>
+</table>
+<p>Bundled upstream references live in <code>docs/UPSTREAM_*</code> so future maintainers can compare behavior against the source material without hunting.</p>
+<%- include('partials/footer') %>

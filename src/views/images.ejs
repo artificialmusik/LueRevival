@@ -1,0 +1,5 @@
+<%- include('partials/header', { title: 'Images' }) %>
+<h2>Images</h2>
+<form method="post" action="/images?_csrf=<%= encodeURIComponent(csrfToken) %>" enctype="multipart/form-data"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><input type="file" name="image" accept="image/*" required><button>upload</button></form>
+<div class="imgs"><% images.forEach(function(img){ %><div class="img"><div><a href="/uploads/<%= img.stored_name %>"><img src="/uploads/<%= img.stored_name %>" alt="<%= img.original_name %>" style="max-width:150px;max-height:150px"></a></div><span><%= img.original_name %><br>by <%= img.username %></span></div><% }) %></div><div style="clear:both"></div>
+<%- include('partials/footer') %>

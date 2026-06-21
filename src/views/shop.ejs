@@ -1,0 +1,8 @@
+<%- include('partials/header', { title: 'Shop' }) %>
+<h2>Shop</h2>
+<table class="grid"><tr><th>Item</th><th>Price</th><th>Description</th><th>Buy</th></tr>
+<% items.forEach(function(i){ %><tr><td><%= i.name %></td><td><%= i.price %></td><td><%= i.description %></td><td><form method="post" action="/shop/buy/<%= i.id %>"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><button>buy</button></form></td></tr><% }) %>
+</table>
+<h3>Inventory</h3>
+<ul><% inventory.forEach(function(i){ %><li>#<%= i.id %> <%= i.name %> - <%= i.description %></li><% }) %></ul>
+<%- include('partials/footer') %>

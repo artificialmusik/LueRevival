@@ -1,0 +1,13 @@
+<%- include('partials/header', { title: 'Invites' }) %>
+<h2>Invites</h2>
+<p>Available invite items: <%= inviteItems.length %>. Buy invite items in the shop for 50 karma.</p>
+<% if (inviteItems.length) { %>
+<form method="post" action="/invite"><input type="hidden" name="_csrf" value="<%= csrfToken %>">
+  <input type="hidden" name="inventory_id" value="<%= inviteItems[0].inventory_id %>">
+  <label>Email/note <input name="email"></label> <button>Generate invite</button>
+</form>
+<% } %>
+<table class="grid"><tr><th>Code</th><th>Email</th><th>Used</th><th>Created</th></tr>
+<% invites.forEach(function(i){ %><tr><td><code><%= i.invite_code %></code></td><td><%= i.email || '' %></td><td><%= i.used_at ? 'yes' : 'no' %></td><td><%= new Date(i.created_at).toLocaleString() %></td></tr><% }) %>
+</table>
+<%- include('partials/footer') %>

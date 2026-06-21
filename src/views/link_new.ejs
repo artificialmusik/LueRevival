@@ -1,0 +1,9 @@
+<%- include('partials/header', { title: 'Add Link' }) %>
+<h2>Add Link</h2>
+<form method="post" action="/links" class="classic-form"><input type="hidden" name="_csrf" value="<%= csrfToken %>">
+<label>Title <input name="title" maxlength="80" required></label><br>
+<label>URL <input name="url" maxlength="512"></label><br>
+<label>Tags <input name="tags"></label><br>
+<textarea name="description" rows="8" cols="100" required></textarea><br>
+<button>Add Link</button></form>
+<%- include('partials/footer') %>

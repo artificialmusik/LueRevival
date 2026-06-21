@@ -1,0 +1,10 @@
+<%- include('partials/header', { title: 'New Topic' }) %>
+<h2>New topic in <%= board.title %></h2>
+<form method="post" action="/boards/<%= board.id %>/topics" class="classic-form">
+  <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+  <label>Title <input name="title" maxlength="80" required></label><br>
+  <label>Tags <input name="tags" placeholder="LUE, meta"></label><br>
+  <textarea name="body" rows="12" cols="100" maxlength="8192" required></textarea><br>
+  <button type="submit">Create Topic</button>
+</form>
+<%- include('partials/footer') %>

@@ -1,0 +1,6 @@
+<%- include('partials/header', { title: profile.username }) %>
+<h2><%= profile.username %></h2>
+<table class="grid"><tr><th>Joined</th><td><%= new Date(profile.account_created).toLocaleString() %></td></tr><tr><th>Status</th><td><%= profile.status %></td></tr><tr><th>Karma</th><td><%= profile.karma %></td></tr><tr><th>Quote</th><td><%= profile.quote || '' %></td></tr><tr><th>Signature</th><td><%= profile.signature || '' %></td></tr></table>
+<h3>Recent topics</h3>
+<ul><% topics.forEach(function(t){ %><li><a href="/topics/<%= t.id %>"><%= t.title %></a></li><% }) %></ul>
+<%- include('partials/footer') %>

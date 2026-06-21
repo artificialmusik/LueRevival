@@ -1,0 +1,17 @@
+<%- include('partials/header', { title: board.title }) %>
+<h2><%= board.title %></h2>
+<p><%= board.description %></p>
+<% if (currentUser) { %><p><a href="/boards/<%= board.id %>/new">Create topic</a></p><% } %>
+<table class="grid">
+  <tr><th>Topic</th><th>Tags</th><th>Replies</th><th>Author</th><th>Updated</th></tr>
+  <% topics.forEach(function(t){ %>
+    <tr>
+      <td class="<%= t.locked ? 'closed' : '' %> <%= t.pinned_until && new Date(t.pinned_until) > new Date() ? 'sticky' : '' %>"><a href="/topics/<%= t.id %>"><%= t.title %></a><% if (t.locked) { %> [locked]<% } %><% if (t.pinned_until && new Date(t.pinned_until) > new Date()) { %> [pinned]<% } %></td>
+      <td><%= (t.tags || []).join(', ') %></td>
+      <td><%= Math.max(0, t.replies - 1) %></td>
+      <td><%= t.username %></td>
+      <td><%= new Date(t.updated_at).toLocaleString() %></td>
+    </tr>
+  <% }) %>
+</table>
+<%- include('partials/footer') %>

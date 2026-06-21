@@ -1,0 +1,15 @@
+# Optional override for Nathan's VPS when routing through the existing containerized Caddy stack.
+# Usage:
+#   docker compose -f docker-compose.yml -f docker-compose.caddy-example.yml up -d
+# Then add the Caddyfile block from docs/DEPLOYMENT.md.
+services:
+  app:
+    ports: []
+    networks:
+      - default
+      - cloudfyr_caddy
+
+networks:
+  cloudfyr_caddy:
+    external: true
+    name: headscale-stack-cloudfyr-v31_default

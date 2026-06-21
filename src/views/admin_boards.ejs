@@ -1,0 +1,6 @@
+<%- include('partials/header', { title: 'Boards Admin' }) %>
+<h2>Boards</h2>
+<table class="grid"><tr><th>Title</th><th>Description</th><th>Sort</th><th>Private</th></tr><% boards.forEach(function(b){ %><tr><td><%= b.title %></td><td><%= b.description %></td><td><%= b.sort_order %></td><td><%= b.private %></td></tr><% }) %></table>
+<h3>Add/update board</h3>
+<form method="post" action="/admin/boards"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><input name="title" placeholder="Board title" required> <input name="description" placeholder="description" size="60"> <input name="sort_order" value="0" size="3"> <label><input type="checkbox" name="private"> private</label> <button>save</button></form>
+<%- include('partials/footer') %>

@@ -1,0 +1,7 @@
+<%- include('partials/header', { title: 'Search' }) %>
+<h2>Search</h2>
+<form method="get" action="/search"><input name="q" value="<%= q %>" size="60"><button>Search</button></form>
+<table class="search">
+<% results.forEach(function(r){ %><tr><th><%= r.type %></th><td><a href="/<%= r.type === 'link' ? 'links' : 'topics' %>/<%= r.id %>"><%= r.title %></a><br><%= r.snippet %></td></tr><% }) %>
+</table>
+<%- include('partials/footer') %>

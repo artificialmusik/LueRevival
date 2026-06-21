@@ -1,0 +1,9 @@
+<%- include('partials/header', { title: 'Site Options' }) %>
+<h2>Site Options</h2>
+<form method="post" action="/admin/site" class="classic-form"><input type="hidden" name="_csrf" value="<%= csrfToken %>">
+<label>Site name <input name="site_name" value="<%= site.site_name %>"></label><br>
+<label>Tagline <input name="tagline" size="80" value="<%= site.tagline %>"></label><br>
+<label>Registration <select name="registration_mode"><% ['open','invite','closed'].forEach(function(m){ %><option value="<%= m %>" <%= site.registration_mode===m?'selected':'' %>><%= m %></option><% }) %></select></label><br>
+<label><input type="checkbox" name="invites_enabled" <%= site.invites_enabled?'checked':'' %>> Invites enabled</label><br>
+<button>Save</button></form>
+<%- include('partials/footer') %>
